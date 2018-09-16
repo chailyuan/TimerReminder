@@ -1,5 +1,3 @@
-#pragma warning (disable:4819)
-
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "DbOperate.h"
@@ -96,6 +94,26 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initSqlModel("");
     initDateModel(0);
+
+    //系统托盘图标
+    mSysTrayIcon = new QSystemTrayIcon(this);
+    //新建托盘要显示的icon
+    QIcon icon = QIcon("../icon/start.png");
+    //将icon设到QSystemTrayIcon对象中
+    mSysTrayIcon->setIcon(icon);
+    //当鼠标移动到托盘上的图标时，会显示此处设置的内容
+    mSysTrayIcon->setToolTip(QObject::tr("test"));
+
+    mSysTrayIcon->show();
+
+    //给QSystemTrayIcon添加槽函数
+    connect(mSysTrayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason)));
+
+    //建立托盘操作的菜单
+    createActions();
+    createMenu();
+    //在系统托盘显示此对象
+    mSysTrayIcon->show();
 }
 
 
@@ -105,39 +123,74 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::closeEvent(QCloseEvent *e){
-    //新建QSystemTrayIcon对象
-        mSysTrayIcon = new QSystemTrayIcon(this);
-        //新建托盘要显示的icon
-        qDebug()<<"1";
-        QIcon icon = QIcon("/icon/start.png");
-        qDebug()<<"2";
-        //将icon设到QSystemTrayIcon对象中
-        mSysTrayIcon->setIcon(icon);
-        qDebug()<<"3";
-        //当鼠标移动到托盘上的图标时，会显示此处设置的内容
-        mSysTrayIcon->setToolTip(QObject::tr("test"));
-        qDebug()<<"4";
-        //在系统托盘显示此对象
-        mSysTrayIcon->show();
-        qDebug()<<"5";
+    Q_UNUSED(e)
+    e->ignore();
+    this->hide();
 }
 
 void MainWindow::changeEvent(QEvent *e)
 {
-//    mSysTrayIcon = new QSystemTrayIcon(this);
-//    //新建托盘要显示的icon
-//    qDebug()<<"1";
-//    QIcon icon = QIcon("/icon/start.png");
-//    qDebug()<<"2";
-//    //将icon设到QSystemTrayIcon对象中
-//    mSysTrayIcon->setIcon(icon);
-//    qDebug()<<"3";
-//    //当鼠标移动到托盘上的图标时，会显示此处设置的内容
-//    mSysTrayIcon->setToolTip(QObject::tr("test"));
-//    qDebug()<<"4";
-//    //在系统托盘显示此对象
-//    mSysTrayIcon->show();
-//    qDebug()<<"5";
+    Q_UNUSED(e)
+}
+
+void MainWindow::createActions()
+{
+    mShowMainAction = new QAction(QObject::tr("显示主界面"),this);
+    connect(mShowMainAction,SIGNAL(triggered()),this,SLOT(on_showMainAction()));
+
+    mExitAppAction = new QAction(QObject::tr("退出"),this);
+    connect(mExitAppAction,SIGNAL(triggered()),this,SLOT(on_exitAppAction()));
+
+}
+
+void MainWindow::createMenu()
+{
+    mMenu = new QMenu(this);
+    //新增菜单项---显示主界面
+    mMenu->addAction(mShowMainAction);
+    //增加分隔符
+    mMenu->addSeparator();
+    //新增菜单项---退出程序
+    mMenu->addAction(mExitAppAction);
+    //把QMenu赋给QSystemTrayIcon对象
+    mSysTrayIcon->setContextMenu(mMenu);
+}
+/*
+* 当在系统托盘点击菜单内的显示主界面操作
+*/
+void MainWindow::on_showMainAction()
+{
+    this->show();
+}
+
+/*
+* 当在系统托盘点击菜单内的退出程序操作
+*/
+void MainWindow::on_exitAppAction()
+{
+    exit(0);
+}
+
+void MainWindow::on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason reason)
+{
+    switch(reason){
+    case QSystemTrayIcon::Trigger:
+        //显示消息球，1s后自动消失
+        //第一个参数是标题
+        //第二个参数是消息内容
+        //第三个参数图标
+        //第四个参数是超时毫秒数
+        mSysTrayIcon->showMessage(QObject::tr("Message Title"),
+                                  QObject::tr("欢迎使用此程序"),
+                                  QSystemTrayIcon::Information,
+                                  1000);
+        break;
+    case QSystemTrayIcon::DoubleClick:
+        this->show();
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::checkCurrentTime()
@@ -470,16 +523,14 @@ void MainWindow::on_importBtn_clicked()
             return; // failed to load excel
         }
 
-
-
-
         int quit = 0;
         for(int row=2;quit<1;++row){
             for(int col=1;col<=8;++col){
                 qDebug()<<"col = "<<col;
                 Cell* cell = xlsx.cellAt(row, col);
-                if ( cell == 0 || cell->readValue().isNull()){
+                if ( cell == nullptr || cell->readValue().toString()==""){
                     quit = 1; // cell vaule is not set
+                    break;
                 }
                  QVariant var = cell->readValue();
                  qDebug()<<var;
@@ -487,12 +538,14 @@ void MainWindow::on_importBtn_clicked()
                  if(col == 1){
                      mShowDataModel.insertRow(rowNum+row-2);
                      mShowDataModel.setData(mShowDataModel.index(rowNum+row-2,0),QVariant(max+row-1));
+                 }else if(col ==6 || col == 7){
+                     mShowDataModel.setData(mShowDataModel.index(rowNum+row-2,col-1),cell->readValue().toDate().toString("yyyy/MM/dd"));
                  }else{
                      mShowDataModel.setData(mShowDataModel.index(rowNum+row-2,col-1),cell->readValue().toString());
-                     mShowDataModel.submitAll(); //可以直接提交
+
                  }
             }
-
+            mShowDataModel.submitAll(); //可以直接提交
         }
     }
 

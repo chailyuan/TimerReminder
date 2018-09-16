@@ -38,6 +38,17 @@ AddDialog::~AddDialog()
     delete ui;
 }
 
+void AddDialog::closeEvent(QCloseEvent *e)
+{
+    Q_UNUSED(e)
+    this->done(-1);
+}
+
+void AddDialog::reject()
+{
+    close();
+}
+
 void AddDialog::on_confirmBtn_clicked()
 {
 

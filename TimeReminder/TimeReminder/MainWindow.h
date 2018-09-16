@@ -51,6 +51,11 @@ private slots:
     void closeEvent(QCloseEvent *e);
 
     void checkCurrentTime();
+
+    void on_showMainAction();
+    void on_exitAppAction();
+    void on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason reason);
+
 private:
     Ui::MainWindow *ui;
     QAction *set15Reminder;
@@ -61,6 +66,13 @@ private:
     QSystemTrayIcon *mSysTrayIcon;
 
     QTimer *timer;
+
+    QMenu *mMenu;
+    QAction *mShowMainAction;
+    QAction *mExitAppAction;
+
+    void createActions();
+    void createMenu();
 
 private:
     bool checkSign = false;

@@ -92,15 +92,19 @@ public:
     inline void setRemark(const QString& remark){this->remark = remark;}
 
 public:
-    RecordEntity& operator=(const RecordEntity* rh){
-        this->id = rh->id;
-        this->partment = rh->partment;
-        this->name = rh->name;
-        this->sex = rh->sex;
-        this->depth = rh->depth;
-        this->lasttime = rh->lasttime;
-        this->deadline = rh->deadline;
-        this->remark = rh->remark;
+    RecordEntity& operator=(const RecordEntity& rh){
+        if(this == &rh) return *this;
+
+        this->id = rh.id;
+        this->partment = rh.partment;
+        this->name = rh.name;
+        this->sex = rh.sex;
+        this->depth = rh.depth;
+        this->lasttime = rh.lasttime;
+        this->deadline = rh.deadline;
+        this->remark = rh.remark;
+
+        return *this;
     }
 
 };

@@ -59,6 +59,8 @@ QXLSX_HEADERPATH=./header/  # current QXlsx header path is ./header/
 QXLSX_SOURCEPATH=./source/  # current QXlsx source path is ./source/
 include(./QXlsx.pri)
 
+#QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

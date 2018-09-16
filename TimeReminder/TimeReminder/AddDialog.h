@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "RecordEntity.h"
+#include <QCloseEvent>
 
 namespace Ui {
 class AddDialog;
@@ -30,6 +31,10 @@ private slots:
     void on_confirmBtn_clicked();
 
     void on_cancelBtn_clicked();
+
+    void closeEvent(QCloseEvent *e);
+
+    void reject();
 
 private:
     Ui::AddDialog *ui;
