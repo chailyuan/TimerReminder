@@ -1,0 +1,12 @@
+#ifndef DBOPERATE_GLOBAL_H
+#define DBOPERATE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(DBOPERATE_LIBRARY)
+#  define DBOPERATESHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define DBOPERATESHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // DBOPERATE_GLOBAL_H
