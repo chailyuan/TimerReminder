@@ -458,6 +458,7 @@ void MainWindow::on_addBtn_clicked()
 void MainWindow::on_deleteBtn_clicked()
 {
     int curRow = ui->outputTableView->currentIndex().row();
+
     int id = mShowDataModel.data(mShowDataModel.index(curRow,0)).toInt();
 
     mShowDataModel.removeRow(curRow); //删除一行
