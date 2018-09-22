@@ -46,6 +46,8 @@ private slots:
 
     void slot_SetOtherReminder();
 
+    void slot_SetClearReminder();
+
     void slot_Modify();
 
     void closeEvent(QCloseEvent *e);
@@ -61,6 +63,8 @@ private:
     QAction *set15Reminder;
     QAction *set30Reminder;
     QAction *setOtherReminder;
+    QAction *setClearReminder;
+
     QAction *setModify;
     QMenu *popMenu;
     QSystemTrayIcon *mSysTrayIcon;
@@ -73,6 +77,8 @@ private:
 
     void createActions();
     void createMenu();
+    void deleteDateById(int id);
+
 
 private:
     bool checkSign = false;
@@ -89,7 +95,13 @@ private:
 
     void initDateModel(int id);
     QList<int>* getReminderId(QString date);
-    void updateRemindDate(int id,const QString& date);
+
+    enum OPERATION_TYPE{
+        OPERATION_DELETE = 0,
+        OPERATION_UPDATE = 1
+    };
+
+    void updateRemindDate(OPERATION_TYPE operation,int id,const QString& date);
 };
 
 #endif // MAINWINDOW_H

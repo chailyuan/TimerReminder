@@ -41,11 +41,15 @@ MainWindow::MainWindow(QWidget *parent) :
     setOtherReminder = new QAction ( this);
     setOtherReminder->setText(QObject::tr("设置其他日期提醒"));
 
+    setClearReminder = new QAction ( this);
+    setClearReminder->setText(QObject::tr("清除提醒"));
+
     popMenu = new QMenu(ui->outputTableView);
     popMenu->addAction(setModify);
     popMenu->addAction(set15Reminder);
     popMenu->addAction(set30Reminder);
     popMenu->addAction(setOtherReminder);
+    popMenu->addAction(setClearReminder);
 
     connect(
                 ui->outputTableView,
@@ -80,6 +84,13 @@ MainWindow::MainWindow(QWidget *parent) :
                 SIGNAL(triggered()),
                 this,
                 SLOT(slot_SetOtherReminder())
+                );
+
+    connect(
+                setClearReminder,
+                SIGNAL(triggered()),
+                this,
+                SLOT(slot_SetClearReminder())
                 );
 
 
@@ -248,7 +259,7 @@ void MainWindow::slot_Set15Reminder()
     QDate remindDate = date.addDays(-15);
     QString remindDateStr = remindDate.toString("yyyy/MM/dd");
 
-    updateRemindDate(id,remindDateStr);
+    updateRemindDate(OPERATION_UPDATE,id,remindDateStr);
 }
 
 
@@ -262,7 +273,7 @@ void MainWindow::slot_Set30Reminder()
     QDate remindDate = date.addDays(-30);
     QString remindDateStr = remindDate.toString("yyyy/MM/dd");
 
-    updateRemindDate(id,remindDateStr);
+    updateRemindDate(OPERATION_UPDATE, id,remindDateStr);
 }
 
 void MainWindow::slot_SetOtherReminder()
@@ -280,7 +291,16 @@ qDebug()<<date;
     qDebug()<<"id = "<<id;
     if(returnStatus != 0)
         return;
-    updateRemindDate(id,date);
+    updateRemindDate(OPERATION_UPDATE,id,date);
+}
+
+void MainWindow::slot_SetClearReminder()
+{
+    int curRow = ui->outputTableView->currentIndex().row();
+
+    int id = mShowDataModel.data(mShowDataModel.index(curRow,0)).toInt();
+
+    updateRemindDate(OPERATION_DELETE,id,"");
 }
 
 void MainWindow::slot_Modify()
@@ -312,7 +332,13 @@ void MainWindow::slot_Modify()
     mShowDataModel.submitAll(); //可以直接提交
 }
 
-void MainWindow::updateRemindDate(int id,const QString& date){
+/**
+ * @brief MainWindow::updateRemindDate
+ * @param operation 操作类型，0删除，1更改
+ * @param id 序号
+ * @param date 更改的日期
+ */
+void MainWindow::updateRemindDate(OPERATION_TYPE operation,int id,const QString& date){
     initDateModel(id);
     int rowNum = mReminderDateModel.rowCount();
 
@@ -320,6 +346,10 @@ void MainWindow::updateRemindDate(int id,const QString& date){
 
     if(rowNum > 0){
         mReminderDateModel.removeRows(0,rowNum);
+    }
+
+    if(operation == OPERATION_DELETE) {
+        return;
     }
 
     initDateModel(0);
@@ -457,12 +487,50 @@ void MainWindow::on_addBtn_clicked()
 
 void MainWindow::on_deleteBtn_clicked()
 {
-    int curRow = ui->outputTableView->currentIndex().row();
+    //删除数据库中的选中行
+    QItemSelectionModel *selections = ui->outputTableView->selectionModel();
+    QModelIndexList selected = selections->selectedIndexes();
+    QMap<int, int> rows;
+    foreach (QModelIndex index, selected)
+       rows.insert(index.row(), mShowDataModel.data(mShowDataModel.index(index.row(),0)).toInt());
+    QMapIterator<int, int> r(rows);
+    r.toBack();
+    while (r.hasPrevious()) {
+           r.previous();
+       mShowDataModel.removeRow(r.key());
+       deleteDateById(r.value());
+    }
+//    //得到id 并删除数据库数据
 
-    int id = mShowDataModel.data(mShowDataModel.index(curRow,0)).toInt();
+//    int curRow = ui->tableView->currentIndex().row();
 
-    mShowDataModel.removeRow(curRow); //删除一行
+//    QModelIndex index = ui->tableView->currentIndex();
 
+//    int id=index.sibling(curRow,7).data().toInt();
+
+//    //删除数据库中数据
+
+//    QSqlQuery query;
+
+//        query.prepare("delete from table where id =:id ");
+
+//        query.bindValue("id",id);
+
+//        query.exec();
+
+//        if(!query.isActive()){
+
+//            QMessageBox::critical(this,QString::fromLocal8Bit("提示"),QString::fromLocal8Bit("删除数据失败!"));
+
+//            return;
+
+//        }
+
+}
+
+void MainWindow::deleteDateById(int id)
+{
+    //删除提醒表里的相关数据
     initDateModel(id);
     int rowNum = mReminderDateModel.rowCount();
     if(rowNum > 0){
