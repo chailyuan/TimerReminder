@@ -58,6 +58,20 @@ private slots:
     void on_exitAppAction();
     void on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason reason);
 
+    void showToolTip(const QModelIndex &index);
+
+    void on_action_FindRepeat_triggered();
+
+    void on_action_FindAll_triggered();
+
+    void on_action_MenuBar_Add_triggered();
+
+    void on_action_MenuBar_Delete_triggered();
+
+    void on_action_MenuBar_Import_triggered();
+
+    void on_action_MenuBar_Export_triggered();
+
 private:
     Ui::MainWindow *ui;
     QAction *set15Reminder;
@@ -78,6 +92,7 @@ private:
     void createActions();
     void createMenu();
     void deleteDateById(int id);
+    QString getRemindDate(int id);
 
 
 private:

@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include "ExcelOperate.h"
 #include <QFileDialog>
+#include <QToolTip>
 
 
 #include "xlsxdocument.h"
@@ -58,6 +59,15 @@ MainWindow::MainWindow(QWidget *parent) :
                 SLOT(slotContextMenu(QPoint))
                 );
 
+    //鼠标移动事件
+    ui->outputTableView->setMouseTracking(true);
+    connect(
+                ui->outputTableView,
+                SIGNAL(entered(const QModelIndex&)),
+                this,
+                SLOT(showToolTip(const QModelIndex&))
+                );
+
     connect(
                 setModify,
                 SIGNAL(triggered()),
@@ -92,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 this,
                 SLOT(slot_SetClearReminder())
                 );
+
+
 
 
     connect(
@@ -182,6 +194,19 @@ void MainWindow::on_exitAppAction()
     exit(0);
 }
 
+void MainWindow::showToolTip(const QModelIndex &index)
+{
+    qDebug()<<"showToolTip";
+        if(!index.isValid())
+                return;
+
+        int row = index.row();
+        int id = mShowDataModel.data(mShowDataModel.index(row,0)).toInt();
+
+        QToolTip::showText(QCursor::pos(), getRemindDate(id));
+}
+
+
 void MainWindow::on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason reason)
 {
     switch(reason){
@@ -208,7 +233,7 @@ void MainWindow::checkCurrentTime()
 {
     QDateTime time = QDateTime::currentDateTime();
     int minute = time.time().minute();
-    qDebug()<<"minute:"<<minute;
+//    qDebug()<<"minute:"<<minute;
     if(minute == this->minute){
         if(checkSign == false){
             checkSign = true;
@@ -330,6 +355,23 @@ void MainWindow::slot_Modify()
         mShowDataModel.setData(mShowDataModel.index(curRow,i),backEntity.getPara(i));
     }
     mShowDataModel.submitAll(); //可以直接提交
+}
+
+/**
+ * @brief MainWindow::getRemindDate
+ * @param id 人员对应的id
+ */
+QString MainWindow::getRemindDate(int id)
+{
+    initDateModel(id);
+    int rowNum = mReminderDateModel.rowCount();
+
+//    qDebug()<<rowNum;
+
+    if(rowNum > 0){
+        return QString("提醒日期:")+mReminderDateModel.data(mReminderDateModel.index(0,1)).toString();
+    }
+    return "无提醒";
 }
 
 /**
@@ -652,4 +694,35 @@ void MainWindow::on_exportBtn_clicked()
     path.replace("/","\\");//将地址中的"/"替换为"\"，因为在Windows下使用的是"\"。
     QProcess::startDetached("explorer "+path);//打开上面获取的目录
 
+}
+
+void MainWindow::on_action_FindRepeat_triggered()
+{
+    qDebug()<<"on_action_FindRepeat_triggered";
+    initSqlModel("(USER.NAME) in  (select NAME from USER group by NAME  having count(*) > 1)");
+}
+
+void MainWindow::on_action_FindAll_triggered()
+{
+    initSqlModel("");
+}
+
+void MainWindow::on_action_MenuBar_Add_triggered()
+{
+    on_addBtn_clicked();
+}
+
+void MainWindow::on_action_MenuBar_Delete_triggered()
+{
+    on_deleteBtn_clicked();
+}
+
+void MainWindow::on_action_MenuBar_Import_triggered()
+{
+    on_importBtn_clicked();
+}
+
+void MainWindow::on_action_MenuBar_Export_triggered()
+{
+    on_exportBtn_clicked();
 }

@@ -100,6 +100,36 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>查看</string>
+    </property>
+    <addaction name="action_FindRepeat"/>
+    <addaction name="action_FindAll"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>操作</string>
+    </property>
+    <addaction name="action_MenuBar_Add"/>
+    <addaction name="action_MenuBar_Delete"/>
+    <addaction name="action_MenuBar_Import"/>
+    <addaction name="action_MenuBar_Export"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>导出</string>
+    </property>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -110,6 +140,36 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_FindRepeat">
+   <property name="text">
+    <string>查看重复名字</string>
+   </property>
+  </action>
+  <action name="action_FindAll">
+   <property name="text">
+    <string>查看全部人员</string>
+   </property>
+  </action>
+  <action name="action_MenuBar_Add">
+   <property name="text">
+    <string>增加</string>
+   </property>
+  </action>
+  <action name="action_MenuBar_Delete">
+   <property name="text">
+    <string>删除</string>
+   </property>
+  </action>
+  <action name="action_MenuBar_Import">
+   <property name="text">
+    <string>导入</string>
+   </property>
+  </action>
+  <action name="action_MenuBar_Export">
+   <property name="text">
+    <string>导出</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
