@@ -132,6 +132,9 @@
    <property name="alignment">
     <set>Qt::AlignCenter</set>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QLineEdit" name="lineEdit_PARTMENT">
    <property name="geometry">

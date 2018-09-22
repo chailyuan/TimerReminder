@@ -104,13 +104,17 @@
     <property name="title">
      <string>文件</string>
     </property>
+    <addaction name="action_Menu_Quit"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>查看</string>
     </property>
-    <addaction name="action_FindRepeat"/>
     <addaction name="action_FindAll"/>
+    <addaction name="action_FindRepeat"/>
+    <addaction name="action_Menu_FindNoReminder"/>
+    <addaction name="action_Menu_FindToday"/>
+    <addaction name="action_Menu_FindTimeup"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -123,7 +127,7 @@
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
-     <string>导出</string>
+     <string>帮助</string>
     </property>
    </widget>
    <addaction name="menu"/>
@@ -168,6 +172,26 @@
   <action name="action_MenuBar_Export">
    <property name="text">
     <string>导出</string>
+   </property>
+  </action>
+  <action name="action_Menu_FindNoReminder">
+   <property name="text">
+    <string>查看无提醒人员</string>
+   </property>
+  </action>
+  <action name="action_Menu_FindToday">
+   <property name="text">
+    <string>查看今日提醒人员</string>
+   </property>
+  </action>
+  <action name="action_Menu_Quit">
+   <property name="text">
+    <string>退出(&amp;Q)</string>
+   </property>
+  </action>
+  <action name="action_Menu_FindTimeup">
+   <property name="text">
+    <string>查看今日到期人员</string>
    </property>
   </action>
  </widget>

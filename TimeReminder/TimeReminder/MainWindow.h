@@ -72,6 +72,14 @@ private slots:
 
     void on_action_MenuBar_Export_triggered();
 
+    void on_action_Menu_FindNoReminder_triggered();
+
+    void on_action_Menu_FindToday_triggered();
+
+    void on_action_Menu_Quit_triggered();
+
+    void on_action_Menu_FindTimeup_triggered();
+
 private:
     Ui::MainWindow *ui;
     QAction *set15Reminder;
@@ -93,6 +101,38 @@ private:
     void createMenu();
     void deleteDateById(int id);
     QString getRemindDate(int id);
+
+    //当前表格显示内容
+    enum TABLECONTENT{
+        CONTENT_ALL=0,      //查看全部人员
+        CONTENT_REPEAT=1,   //查看重复人员
+        CONTENT_NOREMIND=2, //查看没有提醒人员
+        CONTENT_TODAY_REMIND=3,   //查看今日提醒人员
+        CONTENT_TODAY_TIMEUP=4,   //查看今日到期人员
+        CONTENT_OTHER=5     //其他人员
+    };
+
+    TABLECONTENT currentContent;
+    QString whereCause;
+
+    inline QString getTitle(TABLECONTENT tc){
+        switch(tc){
+        case CONTENT_ALL:
+            return "全部人员";
+        case CONTENT_REPEAT:
+            return "重复人员";
+        case CONTENT_NOREMIND:
+            return "没有提醒人员";
+        case CONTENT_TODAY_REMIND:
+            return "今日提醒人员";
+        case CONTENT_TODAY_TIMEUP:
+            return "今日到期人员";
+        case CONTENT_OTHER:
+            return "筛选人员";
+        default:
+            return "其他";
+        }
+    }
 
 
 private:

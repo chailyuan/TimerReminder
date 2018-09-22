@@ -114,8 +114,9 @@ MainWindow::MainWindow(QWidget *parent) :
                 );
     timer->start(1000);
 
-
-    initSqlModel("");
+    whereCause = "";
+    currentContent = CONTENT_ALL;
+    initSqlModel(whereCause);
     initDateModel(0);
 
     //系统托盘图标
@@ -196,7 +197,6 @@ void MainWindow::on_exitAppAction()
 
 void MainWindow::showToolTip(const QModelIndex &index)
 {
-    qDebug()<<"showToolTip";
         if(!index.isValid())
                 return;
 
@@ -233,17 +233,15 @@ void MainWindow::checkCurrentTime()
 {
     QDateTime time = QDateTime::currentDateTime();
     int minute = time.time().minute();
-//    qDebug()<<"minute:"<<minute;
     if(minute == this->minute){
         if(checkSign == false){
             checkSign = true;
             //TODO
             initDateModel(0);
-            qDebug()<<"1111111111";
-            qDebug()<<QDate::currentDate().toString("yyyy/MM/dd");
+
 
             QList<int> *list = getReminderId(QDate::currentDate().toString("yyyy/MM/dd"));
-            qDebug()<<list->size();
+
             if(list->size() != 0){
                 //select name from USER where ID = ?;
 
@@ -252,12 +250,8 @@ void MainWindow::checkCurrentTime()
                     return;
                 }
 
-                QString str = QString("ID='%1'").arg(list->at(0));
-                for(int i=1;i<list->size();++i){
-                    str += QString("or ID='%1'").arg(list->at(i));
-                }
-                qDebug()<<str;
-                initSqlModel(str);
+                //显示今日到期人员
+                on_action_Menu_FindToday_triggered();
             }
         }
     }else{
@@ -474,19 +468,25 @@ void MainWindow::refreshSqlData(){
 
 void MainWindow::on_searchInputEdit_textChanged(const QString &arg1)
 {
-    if(arg1=="")
-        return initSqlModel("");
+    if(arg1=="") {
+        whereCause = "";
+        currentContent = CONTENT_ALL;
+        return initSqlModel(whereCause);
+    }
 
-    QString order = QString("ID='%1' or PARTMENT like '%")
+   whereCause = QString("ID='%1' or PARTMENT like '%")
                         .arg(arg1)
                     +QString("%2%' or NAME like '%")
                         .arg(arg1)
-                    +QString("%3%'")
+                    +QString("%3%' or SEX like '%")
+                        .arg(arg1)
+                    +QString("%4%' or DEPTH like '%")
+                        .arg(arg1)
+                    +QString("%5%'")
                         .arg(arg1);
 
-
-    qDebug()<<order;
-    initSqlModel(order);
+    currentContent = CONTENT_OTHER;
+    initSqlModel(whereCause);
 }
 
 void MainWindow::on_outputTableView_doubleClicked(const QModelIndex &index)
@@ -508,7 +508,30 @@ void MainWindow::on_outputTableView_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_addBtn_clicked()
 {
+    //添加人员的时候必须是显示全部
+    if(currentContent != CONTENT_ALL){
+        QMessageBox message(
+                    QMessageBox::Question,
+                    "提醒",
+                    "添加人员的时候必须先显示全部人员，是否显示？",
+                    QMessageBox::Yes|QMessageBox::No, nullptr);
+        if(message.exec() == QMessageBox::No){
+            return;
+        }
+
+        whereCause = "";
+        currentContent = CONTENT_ALL;
+        initSqlModel(whereCause);
+    }
+    //
+    int rowNum = mShowDataModel.rowCount(); //获得表的行数
+    int curMaxId = mShowDataModel.data(mShowDataModel.index(rowNum-1,0)).toInt();
+
+    //ep入参，re回参
     RecordEntity re,ep;
+
+    ep.setId(curMaxId+1);
+
     AddDialog ad(ep);
     ad.setRe(&re);
     ad.exec();
@@ -517,7 +540,7 @@ void MainWindow::on_addBtn_clicked()
     if(re.getId() == 0)
         return;
 
-    int rowNum = mShowDataModel.rowCount(); //获得表的行数
+
 
     mShowDataModel.insertRow(rowNum);
     mShowDataModel.setData(mShowDataModel.index(rowNum,0),re.getId());
@@ -581,7 +604,7 @@ void MainWindow::deleteDateById(int id)
     initDateModel(0);
 
 
-    initSqlModel("");
+    initSqlModel(whereCause);
 }
 
 void MainWindow::on_importBtn_clicked()
@@ -612,10 +635,10 @@ void MainWindow::on_importBtn_clicked()
         fileNames = fileDialog->selectedFiles();
     }
 
-    //
-    QString sql = "select * from ut_s_orders";
+    whereCause = "";
+    currentContent = CONTENT_ALL;
+    initSqlModel(whereCause);
 
-    initSqlModel("");
     int rowNum = mShowDataModel.rowCount();
     int max = 0;
     if(rowNum == 0){
@@ -664,7 +687,16 @@ void MainWindow::on_importBtn_clicked()
 
 void MainWindow::on_exportBtn_clicked()
 {
-    initSqlModel("");
+
+    QMessageBox message(
+                QMessageBox::Question,
+                "提醒",
+                QString("导出")+getTitle(currentContent)+QString("?"),
+                QMessageBox::Yes|QMessageBox::No, nullptr);
+    if(message.exec() == QMessageBox::No){
+        return;
+    }
+
     int rowCount = mShowDataModel.rowCount();
 
     QXlsx::Document xlsx;
@@ -684,7 +716,8 @@ void MainWindow::on_exportBtn_clicked()
         }
 
     }
-    xlsx.saveAs("../excel/USER.xlsx"); // save the document as 'USER.xlsx'
+    QString fineName = QString("../excel/")+getTitle(currentContent)+(".xlsx");
+    xlsx.saveAs(fineName); // save the document as 'USER.xlsx'
 
 
     QDir dir(QDir::currentPath());
@@ -696,16 +729,6 @@ void MainWindow::on_exportBtn_clicked()
 
 }
 
-void MainWindow::on_action_FindRepeat_triggered()
-{
-    qDebug()<<"on_action_FindRepeat_triggered";
-    initSqlModel("(USER.NAME) in  (select NAME from USER group by NAME  having count(*) > 1)");
-}
-
-void MainWindow::on_action_FindAll_triggered()
-{
-    initSqlModel("");
-}
 
 void MainWindow::on_action_MenuBar_Add_triggered()
 {
@@ -726,3 +749,56 @@ void MainWindow::on_action_MenuBar_Export_triggered()
 {
     on_exportBtn_clicked();
 }
+
+
+void MainWindow::on_action_FindRepeat_triggered()
+{
+    whereCause = "(USER.NAME) in  "
+                 "(select NAME from USER "
+                 "group by NAME  having count(*) > 1)";
+    currentContent = CONTENT_REPEAT;
+    initSqlModel(whereCause);
+}
+
+void MainWindow::on_action_FindAll_triggered()
+{
+    whereCause = "";
+    currentContent = CONTENT_ALL;
+    initSqlModel(whereCause);
+}
+
+void MainWindow::on_action_Menu_FindNoReminder_triggered()
+{
+    whereCause = "(USER.ID) not in  "
+                 "(select distinct ID "
+                 "from REMIND_DATE)";
+    currentContent = CONTENT_NOREMIND;
+    initSqlModel(whereCause);
+}
+
+void MainWindow::on_action_Menu_FindToday_triggered()
+{
+    QString today = QDate::currentDate().toString("yyyy/MM/dd");
+    whereCause = QString("(USER.ID) in  "
+                            "(select distinct ID from REMIND_DATE "
+                            "where REMIND_DATE.DATE='%1')").arg(today);
+
+    currentContent = CONTENT_TODAY_REMIND;
+    initSqlModel(whereCause);
+}
+
+void MainWindow::on_action_Menu_FindTimeup_triggered()
+{
+    QString today = QDate::currentDate().toString("yyyy/MM/dd");
+    whereCause = QString("(USER.DEADLINE='%1')").arg(today);
+
+    currentContent = CONTENT_TODAY_TIMEUP;
+    initSqlModel(whereCause);
+}
+
+void MainWindow::on_action_Menu_Quit_triggered()
+{
+    exit(0);
+}
+
+
