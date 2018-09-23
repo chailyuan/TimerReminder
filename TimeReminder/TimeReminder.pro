@@ -4,5 +4,5 @@ SUBDIRS += \
     ConfigInterface \
     DbOperate \
     ExcelOperate \
-    TestForThis \
+#    TestForThis \
     TimeReminder

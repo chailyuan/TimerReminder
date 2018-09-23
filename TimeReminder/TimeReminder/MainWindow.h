@@ -134,6 +134,10 @@ private:
         }
     }
 
+    void setLabelContent(QString content);
+    void setAlignment(int column);
+
+
 
 private:
     bool checkSign = false;

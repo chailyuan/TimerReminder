@@ -117,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
     whereCause = "";
     currentContent = CONTENT_ALL;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
     initDateModel(0);
 
     //系统托盘图标
@@ -216,7 +217,7 @@ void MainWindow::on_activatedSysTrayIcon(QSystemTrayIcon::ActivationReason reaso
         //第二个参数是消息内容
         //第三个参数图标
         //第四个参数是超时毫秒数
-        mSysTrayIcon->showMessage(QObject::tr("Message Title"),
+        mSysTrayIcon->showMessage(QObject::tr("提醒器"),
                                   QObject::tr("欢迎使用此程序"),
                                   QSystemTrayIcon::Information,
                                   1000);
@@ -464,6 +465,13 @@ void MainWindow::refreshSqlData(){
 
     mShowDataModel.setHeaderData(6,Qt::Horizontal,QObject::tr("到期日期"));
     mShowDataModel.setHeaderData(7,Qt::Horizontal,QObject::tr("备注"));
+
+    //设置id居中排列
+}
+
+void MainWindow::setAlignment(int column)
+{
+
 }
 
 void MainWindow::on_searchInputEdit_textChanged(const QString &arg1)
@@ -472,6 +480,7 @@ void MainWindow::on_searchInputEdit_textChanged(const QString &arg1)
         whereCause = "";
         currentContent = CONTENT_ALL;
         return initSqlModel(whereCause);
+        setLabelContent(getTitle(currentContent));
     }
 
    whereCause = QString("ID='%1' or PARTMENT like '%")
@@ -487,6 +496,7 @@ void MainWindow::on_searchInputEdit_textChanged(const QString &arg1)
 
     currentContent = CONTENT_OTHER;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_outputTableView_doubleClicked(const QModelIndex &index)
@@ -522,6 +532,7 @@ void MainWindow::on_addBtn_clicked()
         whereCause = "";
         currentContent = CONTENT_ALL;
         initSqlModel(whereCause);
+        setLabelContent(getTitle(currentContent));
     }
     //
     int rowNum = mShowDataModel.rowCount(); //获得表的行数
@@ -565,6 +576,8 @@ void MainWindow::on_deleteBtn_clicked()
        mShowDataModel.removeRow(r.key());
        deleteDateById(r.value());
     }
+    initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 //    //得到id 并删除数据库数据
 
 //    int curRow = ui->tableView->currentIndex().row();
@@ -605,6 +618,7 @@ void MainWindow::deleteDateById(int id)
 
 
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_importBtn_clicked()
@@ -638,6 +652,7 @@ void MainWindow::on_importBtn_clicked()
     whereCause = "";
     currentContent = CONTENT_ALL;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 
     int rowNum = mShowDataModel.rowCount();
     int max = 0;
@@ -699,6 +714,18 @@ void MainWindow::on_exportBtn_clicked()
 
     int rowCount = mShowDataModel.rowCount();
 
+    if(rowCount == 0)
+    {
+        QMessageBox message1(
+                    QMessageBox::Question,
+                    "提醒",
+                    QString("要导出的数据列表为空，还要导出吗？"),
+                    QMessageBox::Yes|QMessageBox::No, nullptr);
+        if(message1.exec() == QMessageBox::No){
+            return;
+        }
+    }
+
     QXlsx::Document xlsx;
 
     xlsx.write("A1", "序号");
@@ -758,6 +785,7 @@ void MainWindow::on_action_FindRepeat_triggered()
                  "group by NAME  having count(*) > 1)";
     currentContent = CONTENT_REPEAT;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_action_FindAll_triggered()
@@ -765,6 +793,7 @@ void MainWindow::on_action_FindAll_triggered()
     whereCause = "";
     currentContent = CONTENT_ALL;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_action_Menu_FindNoReminder_triggered()
@@ -774,6 +803,7 @@ void MainWindow::on_action_Menu_FindNoReminder_triggered()
                  "from REMIND_DATE)";
     currentContent = CONTENT_NOREMIND;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_action_Menu_FindToday_triggered()
@@ -785,6 +815,7 @@ void MainWindow::on_action_Menu_FindToday_triggered()
 
     currentContent = CONTENT_TODAY_REMIND;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_action_Menu_FindTimeup_triggered()
@@ -794,6 +825,7 @@ void MainWindow::on_action_Menu_FindTimeup_triggered()
 
     currentContent = CONTENT_TODAY_TIMEUP;
     initSqlModel(whereCause);
+    setLabelContent(getTitle(currentContent));
 }
 
 void MainWindow::on_action_Menu_Quit_triggered()
@@ -801,4 +833,8 @@ void MainWindow::on_action_Menu_Quit_triggered()
     exit(0);
 }
 
+void MainWindow::setLabelContent(QString content)
+{
+    ui->label_CurrentContent->setText(content);
+}
 
