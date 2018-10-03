@@ -5,7 +5,7 @@
 #-------------------------------------------------
 include($$PWD/../Base.pri)
 
-QT       += core gui widgets axcontainer sql
+QT       += core gui widgets sql
 
 TARGET = TimeReminder
 TEMPLATE = app
@@ -43,15 +43,12 @@ FORMS += \
 
 
 LIBS += -L$$DESTDIR \
-        -lExcelOperate \
         -lDbOperate
 
-INCLUDEPATH += $$PWD/../ExcelOperate \
-                $$PWD/../DbOperate
+INCLUDEPATH += $$PWD/../DbOperate
 
 
-DEPENDPATH += $$PWD/../ExcelOperate \
-                $$PWD/../DbOperate
+DEPENDPATH += $$PWD/../DbOperate
 
 # QXlsx code for Application Qt project
 QXLSX_PARENTPATH=./         # current QXlsx path is . (. means curret directory)

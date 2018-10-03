@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
         //打开已经运行的程序
 
-        return 0;
+//        return 0;
     }
 
     MainWindow w;

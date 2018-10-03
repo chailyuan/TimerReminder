@@ -5,9 +5,9 @@
 #include "AddDialog.h"
 #include "RecordEntity.h"
 #include <QMessageBox>
-#include "ExcelOperate.h"
 #include <QFileDialog>
 #include <QToolTip>
+#include <QDesktopServices>
 
 
 #include "xlsxdocument.h"
@@ -743,16 +743,15 @@ void MainWindow::on_exportBtn_clicked()
         }
 
     }
-    QString fineName = QString("../excel/")+getTitle(currentContent)+(".xlsx");
-    xlsx.saveAs(fineName); // save the document as 'USER.xlsx'
 
+    QString applicationPath = QCoreApplication::applicationDirPath().mid(0,QCoreApplication::applicationDirPath().indexOf("Run"));
+    applicationPath += "Run/excel/";
 
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cd("excel");
-    QString path=dir.path();//获取程序当前目录
-    path.replace("/","\\");//将地址中的"/"替换为"\"，因为在Windows下使用的是"\"。
-    QProcess::startDetached("explorer "+path);//打开上面获取的目录
+    QString fileName = applicationPath+getTitle(currentContent)+(".xlsx");
+    qDebug()<<fileName;
+    xlsx.saveAs(fileName); // save the document as 'USER.xlsx'
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(applicationPath));
 
 }
 
